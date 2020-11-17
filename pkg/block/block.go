@@ -93,7 +93,7 @@ func Upload(ctx context.Context, logger log.Logger, bkt objstore.Bucket, bdir st
 		return errors.New("empty external labels are not allowed for Thanos block.")
 	}
 
-	meta.Thanos.Files, err = gatherFileStats(bdir)
+	meta.Thanos.Files, err = GetFileStats(bdir)
 	if err != nil {
 		return errors.Wrap(err, "gather meta file stats")
 	}
@@ -251,8 +251,10 @@ func GetSegmentFiles(blockDir string) []string {
 	return result
 }
 
-// TODO(bwplotka): Gather stats when dirctly uploading files.
-func gatherFileStats(blockDir string) (res []metadata.File, _ error) {
+// GetFileStats returns list of all blocks files (chunks, index, meta.json) within the block directory.
+// Paths are relative to the provided blockDir and sorted lexicographically.
+// TODO(bwplotka): Gather stats when directly uploading files.
+func GetFileStats(blockDir string) (res []metadata.File, _ error) {
 	files, err := ioutil.ReadDir(filepath.Join(blockDir, ChunksDirname))
 	if err != nil {
 		return nil, errors.Wrapf(err, "read dir %v", filepath.Join(blockDir, ChunksDirname))
